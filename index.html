@@ -1,0 +1,108 @@
+<!doctype html>
+<html>
+<head>
+		<meta charset = "UTF-8"/>
+		<title> Jumpy frog </title>
+		<script type = "text/javascript" src="js/phaser.min.js"></script>
+</head>
+<body>
+	<script type = "text/javascript">
+	//create new phaser game, include the phaser states that will be using
+	var game = new Phaser.Game(800, 600, Phaser.AUTO, 'simple-platformer', { preload: preload, create: create, update: update});
+	
+	function preload(){
+		// load image in the order you want it to appear
+		game.load.image('sky', 'assets/sky.png');
+		game.load.image('ledge', 'assets/platform.png');
+		game.load.spritesheet('pipe', 'assets/pipes.png', 54, 320);
+		game.load.spritesheet('frog', 'assets/frog2.png', 16, 16);
+	}
+
+	var platforms, players, facing;
+	facing = true;
+
+	function create(){
+
+		//enable arcade physics system
+		game.physics.startSystem(Phaser.Physics.ARCADE);
+
+		//background for the game
+		game.add.sprite(0,0,'sky');
+
+		//create a group called "platform" that contain the ground and ledges
+		platforms = game.add.group();
+
+		//enable physics for all the objects created on the platform group
+		platforms.enableBody = true;
+
+		//create pipe on platform
+		var pipe = platforms.create(60, game.world.height-(game.world.height)*.2, 'pipe', 1);
+		pipe.scale.setTo(0.5, 0.5)
+		pipe.body.immovable = true;
+
+		pipe = platforms.create(130, game.world.height-(game.world.height)*0.6, 'pipe', 0);
+		pipe.scale.setTo(0.5,0.5)
+		pipe.body.immovable = true;
+
+		//create ledge on platform
+		var ledge= platforms.create(0, game.world.height-(game.world.height)*0.6, 'ledge');
+		ledge.scale.setTo(1.5, 0.5)
+		ledge.body.immovable = true;
+
+		//create player and its default settings
+		player = game.add.sprite(32, game.world.height-(game.world.height)*0.4, 'frog');
+		player.scale.setTo(1.5,1.5)
+
+		//enable physics to player
+		game.physics.arcade.enable(player);
+
+		//player properties
+		player.body.bounce.y = 0.6;
+		player.body.gravity.y = 300;
+		player.body.collideWorldBounds = true;
+
+		//add animations for player
+		player.animations.add('left', [10, 11, 12, 13, 14, 15], 10, true);
+		player.animations.add('right', [1, 2, 3, 4, 5, 6], 10, true);
+
+		//enable keyboard input to control player
+		cursors = game.input.keyboard.createCursorKeys();
+		space = game.input.keyboard.addKey(Phaser.Keyboard.SPACEBAR);
+		
+	}
+
+	function update(){
+		//collision of player with the platforms
+		game.physics.arcade.collide(player, platforms);
+		player.body.velocity.x = 0;
+
+		if (cursors.right.isDown){
+			player.body.velocity.x = 150;
+			player.animations.play('right');
+			//facing set to true if right press last
+			facing = true;
+		}
+		else if(cursors.left.isDown){
+			player.body.velocity.x = -150;
+			player.animations.play('left');
+			//facing set to false if left press last
+			facing = false;
+		}
+		else{
+			player.animations.stop();
+			if (facing){
+				player.frame = 0;
+			}
+			else{
+				player.frame = 8;
+			}
+		}
+
+		if (space.isDown){
+			player.body.velocity.y = -100;
+		}
+
+	}
+	</script>
+</body>
+</html>
